@@ -7,8 +7,8 @@ pipeline {
     
     environment {
         IMG_TAG="${sh(script: 'echo \$GIT_COMMIT | cut -c -7 | tr -d \'[:space:]\' ', returnStdout: true ) }.$BUILD_ID"
-        APP_NAME="quizapp"
-        APP_LOGS="/data/thequizapp"
+        APP_NAME="quizappnew"
+        APP_LOGS="/data/thequizappnew"
     }
     agent any
     //agent {
@@ -26,7 +26,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    QuizAppImage = docker.build("$APP_NAME:$IMG_TAG", ".")
+                    QuizAppNewImage = docker.build("$APP_NAME:$IMG_TAG", ".")
                 }
             }
         }
