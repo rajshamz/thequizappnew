@@ -1,5 +1,5 @@
 ---
-APP_NAME: quizapp
+APP_NAME: quizappnew
 IMG_TAG: "{{ lookup('env', 'IMG_TAG') }}"
 COLON: ":"
 CONTAINER_PORT: "{{ lookup('env', 'CONTAINER_PORT') }}"
