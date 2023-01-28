@@ -14,7 +14,7 @@ pipeline {
     agent {
         dockerfile {
             dir 'jenkins'
-            //args '-v /var/run/docker.sock:/var/run/docker.sock'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
     stages {
@@ -27,6 +27,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
+                    sh 'chown jenkins /var/run/docker.sock'
                     QuizAppNewImage = docker.build("$APP_NAME:$IMG_TAG", ".")
                 }
             }
