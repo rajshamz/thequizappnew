@@ -27,6 +27,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
+                    sh 'echo `whoami`'
                     sh 'chown jenkins /var/run/docker.sock'
                     QuizAppNewImage = docker.build("$APP_NAME:$IMG_TAG", ".")
                 }
