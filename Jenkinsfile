@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Clone The Repository') {
             steps {
-                git 'https://github.com/rajshamz/simple-quiz-app.git'
+                git 'https://github.com/tekraveconsulting/thequizapp.git'
             }
         }
         //stage('Install Dependencies'){
