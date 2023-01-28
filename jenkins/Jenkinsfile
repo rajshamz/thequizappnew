@@ -10,12 +10,12 @@ pipeline {
         APP_NAME="quizappnew"
         APP_LOGS="/data/thequizappnew"
     }
-    agent any
-    //agent {
-    //    dockerfile {
-    //        dir 'jenkins'
-    //    }
-    //}
+    //agent any
+    agent {
+        dockerfile {
+            dir 'jenkins'
+        }
+    }
     stages {
         
         stage('Check') {
