@@ -21,7 +21,7 @@ pipeline {
         
         stage('Check') {
             steps {
-                sh 'ls && pwd && whoami'
+                sh 'ls && pwd'
             }
         }
         stage('Build') {
