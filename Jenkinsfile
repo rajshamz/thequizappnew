@@ -35,7 +35,7 @@ pipeline {
                 stage('to dev') {
                     when { branch 'dev' }
                     steps {
-                        withCredentials([file(credentialsId: 'quizapp-dev', variable: 'PIPELINE_ENV')]) { load "$PIPELINE_ENV"}
+                        withCredentials([file(credentialsId: 'quizappnew-dev', variable: 'PIPELINE_ENV')]) { load "$PIPELINE_ENV"}
                         sh 'echo pwd'
                     }
                 }
@@ -43,7 +43,7 @@ pipeline {
                 stage('master'){
                     when {branch 'master'}
                     steps{
-                        withCredentials([file(credentialsId: 'quizapp-master', variable: 'PIPELINE_ENV')]) { load "$PIPELINE_ENV"}
+                        withCredentials([file(credentialsId: 'quizappnew-master', variable: 'PIPELINE_ENV')]) { load "$PIPELINE_ENV"}
                         sh 'echo pwd'
                     }
                 }
