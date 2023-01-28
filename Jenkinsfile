@@ -17,11 +17,7 @@ pipeline {
     //    }
     //}
     stages {
-        //stage('Clone Repository') {
-        //    steps {
-        //        git url: 'https://github.com/tekraveconsulting/thequizapp.git', credentialsId: 'gitHubToken'
-        //    }
-        //}
+        
         stage('Check') {
             steps {
                 sh 'ls && pwd'
