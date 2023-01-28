@@ -1,57 +1,107 @@
+def AnsibleDeploy(){
+    sh 'touch hosts.ini && echo ${hosts_ini} | base64 --decode > hosts.ini'
+    sh 'ANSIBLE_HOST_KEY_CHECKING=false ansible-playbook -i hosts.ini ansible/playbook.yml'
+}
+
 pipeline {
+    
+    environment {
+        IMG_TAG="${sh(script: 'echo \$GIT_COMMIT | cut -c -7 | tr -d \'[:space:]\' ', returnStdout: true ) }.$BUILD_ID"
+        APP_NAME="quizapp"
+        APP_LOGS="/data/thequizapp"
+    }
     agent any
+    //agent {
+    //    dockerfile {
+    //        dir 'jenkins'
+    //    }
+    //}
     stages {
-        stage('Clone The Repository') {
+        //stage('Clone Repository') {
+        //    steps {
+        //        git url: 'https://github.com/tekraveconsulting/thequizapp.git', credentialsId: 'gitHubToken'
+        //    }
+        //}
+        stage('Check') {
             steps {
-                git 'https://github.com/tekraveconsulting/thequizapp.git'
+                sh 'ls && pwd'
             }
         }
-        //stage('Install Dependencies'){
-        //    steps{
-        //        sh 'npm install'
-        //    }
-        //}
-        //stage('Test Coverage'){
-        //    steps{
-        //        sh 'npm test -- --coverage'
-        //    }
-        //}
-        //stage('SonarQube analysis') {
-          //  steps {
-              // Run the SonarQube scan
-            //  sonarqube(
-                // Required parameters
-                //credentialsId: 'your-sonarqube-credentials-id',
-                //projectKey: 'your-sonarqube-project-key',
-                //projectName: 'your-sonarqube-project-name',
-                // Optional parameters
-                //extraProperties: [
-                  // Additional properties to pass to the SonarQube scan
-                  //],
-                  //failOnError: false,  // Set to true to fail the build if the SonarQube scan fails
-                  //maxMemory: '1024m',  // Maximum memory to use for the scan
-                  //organization: 'your-sonarqube-organization',  // Set this if you are using the SonarQube Enterprise edition
-                  //serverUrl: 'https://your-sonarqube-server.com'  // The URL of your SonarQube server
-              //  )
-              //}
-            //}
-          //}
-        stage('Build Docker Container') {
+        stage('Build') {
             steps {
                 script {
-                    def app = docker.build("quiz-app:latest", ".")
+                    QuizAppImage = docker.build("$APP_NAME:$IMG_TAG", ".")
                 }
             }
         }
-        stage('Deploy to Docker Desktop') {
+        stage('Inject environment Variables') {
+            parallel{
+                stage('to dev') {
+                    when { branch 'dev' }
+                    steps {
+                        withCredentials([file(credentialsId: 'quizapp-dev', variable: 'PIPELINE_ENV')]) { load "$PIPELINE_ENV"}
+                        sh 'echo pwd'
+                    }
+                }
+
+                stage('master'){
+                    when {branch 'master'}
+                    steps{
+                        withCredentials([file(credentialsId: 'quizapp-master', variable: 'PIPELINE_ENV')]) { load "$PIPELINE_ENV"}
+                        sh 'echo pwd'
+                    }
+                }
+            }
+        }
+        stage('Publish and Deploy') {
+            when {
+                anyOf {
+                    branch 'master'
+                    branch 'dev'
+                }
+            }
             steps {
                 script {
-                    sh 'docker stop quiz-app || true'
-                    sh 'docker rm quiz-app || true'
-                    sh 'docker run --name quiz-app -d -p 8099:8080 quiz-app:latest'
+                    switch(BRANCH_NAME) {
+                      case ["master", "dev"]:  // Deployment steps for Master and Dev
+                        env.DOCKER_REGISTRY        = "https://192.168.0.120:4443"
+                        env.DOCKER_REGISTRY_HOST   = "192.168.0.120:4443"
+                        env.DOCKER_REGISTRY_SECRET = "DockerRegistry"
+
+                        docker.withRegistry('https://192.168.0.120:4443', 'DockerRegistry') {
+                            QuizAppImage.push()
+                        }
+
+                        withCredentials([usernamePassword(credentialsId: 'DockerRegistry', passwordVariable: 'REGISTRY_PASS', usernameVariable: 'REGISTRY_USER')]) {
+                            AnsibleDeploy()
+                        }
+                        break
                 }
             }
         }
      }
+        //stage('Deploy to Artifactory') {
+        //    steps {
+        //        withCredentials([usernamePassword(credentialsId: 'your-artifactory-credentials-id', passwordVariable: 'ARTIFACTORY_PASSWORD', usernameVariable: 'ARTIFACTORY_USERNAME')]) {
+        //            sh "curl -u $ARTIFACTORY_USERNAME:$ARTIFACTORY_PASSWORD -X PUT 'http://your-artifactory-url/your-repo/your-package-name-version.tar.gz' -T dist/*"
+        //        }
+        //    }
+        //}
+        //stage('Deploy to Docker') {
+        //    steps {
+        //        withCredentials([usernamePassword(credentialsId: 'your-docker-credentials-id', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+        //            sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+        //            sh 'docker build -t your-docker-username/your-image-name:latest .'
+        //            sh 'docker push your-docker-username/your-image-name:latest'
+        //        }
+        //    }
+        //}
+        //stage('Deploy to Server') {
+        //    steps {
+        //        withCredentials([sshUserPrivateKey(credentialsId: 'your-ssh-key-id', keyFileVariable: 'SSH_KEY_FILE', usernameVariable: 'SSH_USER')]) {
+        //            sh "ansible-playbook -i 'your-server-ip,' deploy.yml -u $SSH_USER --private-key=$SSH_KEY_FILE"
+        //        }
+        //    }
+        //}
+    }
 }
-
