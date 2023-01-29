@@ -1,7 +1,7 @@
-def AnsibleDeploy(){
-    sh 'touch hosts.ini && echo ${hosts_ini} | base64 --decode > hosts.ini'
-    sh 'ANSIBLE_HOST_KEY_CHECKING=false ansible-playbook -i hosts.ini ansible/playbook.yml'
-}
+//def AnsibleDeploy(){
+//    sh 'touch hosts.ini && echo ${hosts_ini} | base64 --decode > hosts.ini'
+//    sh 'ANSIBLE_HOST_KEY_CHECKING=false ansible-playbook -i hosts.ini ansible/playbook.yml'
+//}
 
 pipeline {
     
@@ -14,7 +14,7 @@ pipeline {
     agent {
         dockerfile {
             dir 'jenkins'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
+            //args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
     stages {
@@ -69,9 +69,9 @@ pipeline {
                             QuizAppNewImage.push()
                         }
 
-                        withCredentials([usernamePassword(credentialsId: 'DockerRegistry', passwordVariable: 'REGISTRY_PASS', usernameVariable: 'REGISTRY_USER')]) {
-                            AnsibleDeploy()
-                        }
+                        //withCredentials([usernamePassword(credentialsId: 'DockerRegistry', passwordVariable: 'REGISTRY_PASS', usernameVariable: 'REGISTRY_USER')]) {
+                        //    AnsibleDeploy()
+                        //}
                         break
                 }
             }
