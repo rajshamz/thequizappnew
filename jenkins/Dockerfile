@@ -23,8 +23,9 @@ RUN apt-get install -y apt-transport-https ca-certificates curl unzip software-p
        $(lsb_release -cs) \
        stable" && \
     apt update && \
-    apt install -y docker-ce docker-ce-cli containerd.io
-
+    #apt install -y docker-ce docker-ce-cli containerd.io
+    apt install -y docker-ce docker-ce-cli
+    
 RUN npm install -g sonarqube-scanner @angular/cli && \
     npm install --save-dev @angular-devkit/build-angular --silent && \
     wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
